@@ -1,0 +1,71 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+
+        <RootNamespace>InfiniteMagazineReload</RootNamespace>
+        <AssemblyName>InfiniteMagazineReload</AssemblyName>
+
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+
+        <OutputType>Library</OutputType>
+
+        <OutputPath>..\..\build\BepInEx\plugins\InfiniteMagazineReload\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        
+        <SptRoot>D:\EFT</SptRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+
+        <!-- BepInEx -->
+        <Reference Include="BepInEx">
+            <HintPath>$(SptRoot)\BepInEx\core\BepInEx.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <!-- Harmony -->
+        <Reference Include="0Harmony">
+            <HintPath>$(SptRoot)\BepInEx\core\0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <!-- SPT Client -->
+        <Reference Include="spt-common">
+            <HintPath>$(SptRoot)\BepInEx\plugins\spt\spt-common.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <Reference Include="spt-reflection">
+            <HintPath>$(SptRoot)\BepInEx\plugins\spt\spt-reflection.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <!-- EFT -->
+        <Reference Include="Assembly-CSharp">
+            <HintPath>$(SptRoot)\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <!-- Comfort.Common.Singleton<T> -->
+        <Reference Include="Comfort">
+            <HintPath>$(SptRoot)\EscapeFromTarkov_Data\Managed\Comfort.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <!-- Unity -->
+        <Reference Include="UnityEngine">
+            <HintPath>$(SptRoot)\EscapeFromTarkov_Data\Managed\UnityEngine.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>$(SptRoot)\EscapeFromTarkov_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+    </ItemGroup>
+
+</Project>
