@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Comfort.Common;
 using EFT;
 using EFT.Builds;
@@ -53,8 +55,8 @@ internal static class MagazineRefillService
                 return;
             }
 
-            // Empty magazine with a tag.
-            if (magazine.Count != 0)
+            // Skip already-full magazines; empty and partially filled are both refilled.
+            if (magazine.Count >= magazine.Cartridges.MaxCount)
             {
                 return;
             }
@@ -64,14 +66,22 @@ internal static class MagazineRefillService
                 return;
             }
 
-            // Strict (case-sensitive) preset name match.
+            // Strict (case-sensitive) preset name match, restricted to presets compatible with this
+            // magazine, so same-named presets for other magazine types / calibers are ignored.
             var session = Singleton<ClientApplication<IEftSession>>.Instance?.Session;
             var preset = session?.MagBuildsStorage?.Presets
-                .FirstOrDefault(p => string.Equals(p.Name, tagName, StringComparison.Ordinal));
+                .FirstOrDefault(p =>
+                    string.Equals(p.Name, tagName, StringComparison.Ordinal) && IsPresetCompatible(p, magazine));
 
             if (preset == null)
             {
                 return;
+            }
+
+            // Overwrite semantics: discard current rounds, then load the full preset.
+            if (magazine.Count > 0)
+            {
+                ClearCartridges(magazine, controller);
             }
 
             Fill(magazine, preset, controller);
@@ -99,6 +109,56 @@ internal static class MagazineRefillService
         }
 
         return false;
+    }
+
+    private static bool IsPresetCompatible(MagPreset preset, Magazine magazine)
+    {
+        var factory = Singleton<ItemFactory>.Instance;
+        if (factory == null || magazine?.Cartridges == null)
+        {
+            return false;
+        }
+
+        var hasAmmo = false;
+        foreach (var entry in preset.Items)
+        {
+            if (entry == null)
+            {
+                continue;
+            }
+
+            var probe = factory.CreateItem(factory.NextId, entry.TemplateId, null) as Ammo;
+            if (probe == null || !magazine.Cartridges.Filters.CheckItemFilter(probe))
+            {
+                return false;
+            }
+
+            hasAmmo = true;
+        }
+
+        return hasAmmo;
+    }
+
+    private static void ClearCartridges(Magazine magazine, InventoryController controller)
+    {
+        while (magazine.Cartridges.Count > 0)
+        {
+            var round = magazine.Cartridges.Last;
+            if (round == null)
+            {
+                break;
+            }
+
+            var result = ItemManipulator.Remove(round, controller);
+            if (!result.Succeeded)
+            {
+                Plugin.Log?.LogWarning($"[InfiniteMagazineReload] Failed to remove round: {result.Error}");
+                break;
+            }
+
+            result.Value.RaiseEvents(controller, CommandStatus.Begin);
+            result.Value.RaiseEvents(controller, CommandStatus.Succeed);
+        }
     }
 
     private static void Fill(Magazine magazine, MagPreset preset, InventoryController controller)
