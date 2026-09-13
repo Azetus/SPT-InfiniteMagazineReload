@@ -49,6 +49,13 @@ internal static class MagazineRefillService
 
             var tagName = magazine.Tag?.Name;
 
+            // Skip magazines installed in a slot (e.g. inserted into a weapon). The game forbids
+            // loading an installed magazine, and doing so during a reload corrupts the weapon state.
+            if (magazine.CurrentAddress?.Container is Slot)
+            {
+                return;
+            }
+
             // Must be within the player's equipment tree (any equipped slot / container, no exclusions).
             if (!controller.Inventory.IsEquipmentAddress(args.To, out _))
             {
