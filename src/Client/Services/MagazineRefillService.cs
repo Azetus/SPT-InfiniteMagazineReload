@@ -49,8 +49,8 @@ internal static class MagazineRefillService
 
             var tagName = magazine.Tag?.Name;
 
-            // Destination must be backpack / rig / pockets.
-            if (!IsInUsableStorage(args.To, controller.Inventory))
+            // Must be within the player's equipment tree (any equipped slot / container, no exclusions).
+            if (!controller.Inventory.IsEquipmentAddress(args.To, out _))
             {
                 return;
             }
@@ -90,25 +90,6 @@ internal static class MagazineRefillService
         {
             Plugin.Log?.LogError($"[InfiniteMagazineReload] OnItemAdded failed: {ex}");
         }
-    }
-
-    private static bool IsInUsableStorage(ItemAddress to, Inventory inventory)
-    {
-        if (to == null || inventory?.Equipment == null)
-        {
-            return false;
-        }
-
-        foreach (var slotName in new[] { EquipmentSlot.Backpack, EquipmentSlot.TacticalVest, EquipmentSlot.Pockets })
-        {
-            var container = inventory.Equipment.GetSlot(slotName)?.ContainedItem;
-            if (container != null && to.IsChildOf(container))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static bool IsPresetCompatible(MagPreset preset, Magazine magazine)
